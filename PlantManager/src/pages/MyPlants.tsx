@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, View, Image, FlatList } from "react-native";
+import { StyleSheet, Text, View, Image, FlatList, Alert } from "react-native";
 import { Header } from "../components/Header";
-import { PlantProps, loadPlant } from "../libs/storage";
+import {
+  PlantProps,
+  loadPlant,
+  StoragePlantProps,
+  removePlant,
+} from "../libs/storage";
 import { formatDistance } from "date-fns";
 import { pt } from "date-fns/locale";
 import { PlantCardSecundary } from "../components/PlantCardSecundary";
@@ -36,6 +41,26 @@ export function MyPlants() {
     loadStorageDate();
   }, []);
 
+  function handleRemove(plant: PlantProps) {
+    Alert.alert("Remover", `Deseja remover a ${plant.name}?`, [
+      { text: "Não", style: "cancel" },
+      {
+        text: "Sim",
+        style: "default",
+        onPress: async () => {
+          try {
+            await removePlant(plant.id);
+            setMyPlants((oldData) =>
+              oldData.filter((item) => item.id !== plant.id)
+            );
+          } catch (error) {
+            Alert.alert("Não foi possível remover as planta.");
+          }
+        },
+      },
+    ]);
+  }
+
   if (loading) return <Load />;
   else
     return (
@@ -53,7 +78,9 @@ export function MyPlants() {
             renderItem={({ item }) => (
               <PlantCardSecundary
                 data={item}
-                onPress={() => {}}
+                handleRemove={() => {
+                  handleRemove(item);
+                }}
               ></PlantCardSecundary>
             )}
             showsVerticalScrollIndicator={false}
